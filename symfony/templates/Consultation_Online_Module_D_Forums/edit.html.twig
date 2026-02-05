@@ -1,0 +1,58 @@
+{# templates/consultation/edit.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Consultation{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-edit"></i> Modifier Consultation #{{ consultation.id }}
+                </h3>
+            </div>
+            <div class="card-body">
+                {{ form_start(form) }}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_row(form.patient) }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_row(form.medecin) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_row(form.dateDebut) }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_row(form.type) }}
+                    </div>
+                </div>
+
+                {{ form_row(form.motif) }}
+                {{ form_row(form.symptomes) }}
+                {{ form_row(form.diagnostic) }}
+                {{ form_row(form.notesConsultation) }}
+                {{ form_row(form.montant) }}
+
+                {{ form_rest(form) }}
+
+                <div class="d-flex justify-content-between">
+                    <a href="{{ path('app_consultation_show', {id: consultation.id}) }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-save"></i> Enregistrer les modifications
+                    </button>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

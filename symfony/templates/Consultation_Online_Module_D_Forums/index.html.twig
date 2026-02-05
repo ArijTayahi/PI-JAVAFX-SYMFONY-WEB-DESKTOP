@@ -1,0 +1,132 @@
+{# templates/consultation/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Consultations{% endblock %}
+
+{% block body %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="mb-0">
+            <i class="fas fa-calendar-alt"></i> Mes Consultations
+        </h3>
+    </div>
+    <div class="card-body">
+        {# FONCTIONNALITÉ AVANCÉE : RECHERCHE #}
+        <form method="get" class="mb-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Rechercher par patient, médecin, diagnostic..." 
+                               value="{{ search }}">
+                        <button class="btn btn-primary" type="submit">
+                            Rechercher
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{{ path('app_consultation_new') }}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Nouvelle Consultation
+                    </a>
+                </div>
+            </div>
+        </form>
+
+        {# FONCTIONNALITÉ AVANCÉE : TRI #}
+        <div class="mb-3">
+            <strong>Trier par :</strong>
+            <a href="{{ path('app_consultation_index', {sort: 'dateDebut', order: order == 'ASC' ? 'DESC' : 'ASC'}) }}" 
+               class="btn btn-sm btn-outline-primary">
+                Date {{ sort == 'dateDebut' ? (order == 'ASC' ? '↑' : '↓') : '' }}
+            </a>
+            <a href="{{ path('app_consultation_index', {sort: 'statut', order: order == 'ASC' ? 'DESC' : 'ASC'}) }}" 
+               class="btn btn-sm btn-outline-primary">
+                Statut {{ sort == 'statut' ? (order == 'ASC' ? '↑' : '↓') : '' }}
+            </a>
+            <a href="{{ path('app_consultation_index', {sort: 'type', order: order == 'ASC' ? 'DESC' : 'ASC'}) }}" 
+               class="btn btn-sm btn-outline-primary">
+                Type {{ sort == 'type' ? (order == 'ASC' ? '↑' : '↓') : '' }}
+            </a>
+        </div>
+
+        {% if consultations|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Patient</th>
+                            <th>Médecin</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for consultation in consultations %}
+                        <tr>
+                            <td>{{ consultation.id }}</td>
+                            <td>
+                                <i class="fas fa-user-injured text-primary"></i>
+                                {{ consultation.patient }}
+                            </td>
+                            <td>
+                                <i class="fas fa-user-md text-success"></i>
+                                {{ consultation.medecin }}
+                            </td>
+                            <td>{{ consultation.dateDebut|date('d/m/Y H:i') }}</td>
+                            <td>
+                                {% if consultation.type == 'VIDEO' %}
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-video"></i> Vidéo
+                                    </span>
+                                {% elseif consultation.type == 'CABINET' %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-hospital"></i> Cabinet
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-phone"></i> Audio
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set statusClass = {
+                                    'PLANIFIEE': 'warning',
+                                    'EN_COURS': 'info',
+                                    'TERMINEE': 'success',
+                                    'ANNULEE': 'danger',
+                                    'NO_SHOW': 'dark'
+                                } %}
+                                <span class="badge bg-{{ statusClass[consultation.statut] ?? 'secondary' }}">
+                                    {{ consultation.statut }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ path('app_consultation_show', {id: consultation.id}) }}" 
+                                   class="btn btn-sm btn-info" title="Voir">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ path('app_consultation_edit', {id: consultation.id}) }}" 
+                                   class="btn btn-sm btn-warning" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i>
+                Aucune consultation trouvée.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

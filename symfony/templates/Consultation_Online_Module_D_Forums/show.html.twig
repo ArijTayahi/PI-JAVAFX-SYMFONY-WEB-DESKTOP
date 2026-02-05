@@ -1,0 +1,174 @@
+{# templates/consultation/show.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Consultation #{{ consultation.id }}{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-clipboard-list"></i> 
+                    Détails de la Consultation #{{ consultation.id }}
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong><i class="fas fa-user-injured"></i> Patient :</strong><br>
+                        {{ consultation.patient }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="fas fa-user-md"></i> Médecin :</strong><br>
+                        {{ consultation.medecin }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong><i class="fas fa-calendar"></i> Date :</strong><br>
+                        {{ consultation.dateDebut|date('d/m/Y à H:i') }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="fas fa-hourglass-half"></i> Durée :</strong><br>
+                        {% if consultation.dureeMinutes %}
+                            {{ consultation.dureeMinutes }} minutes
+                        {% else %}
+                            <em class="text-muted">Non définie</em>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong><i class="fas fa-video"></i> Type :</strong><br>
+                        <span class="badge bg-primary">{{ consultation.type }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="fas fa-flag"></i> Statut :</strong><br>
+                        <span class="badge bg-success">{{ consultation.statut }}</span>
+                    </div>
+                </div>
+
+                {% if consultation.motif %}
+                <div class="mb-3">
+                    <strong><i class="fas fa-comment-medical"></i> Motif :</strong>
+                    <p class="mt-2">{{ consultation.motif }}</p>
+                </div>
+                {% endif %}
+
+                {% if consultation.symptomes %}
+                <div class="mb-3">
+                    <strong><i class="fas fa-thermometer"></i> Symptômes :</strong>
+                    <p class="mt-2">{{ consultation.symptomes }}</p>
+                </div>
+                {% endif %}
+
+                {% if consultation.diagnostic %}
+                <div class="mb-3">
+                    <strong><i class="fas fa-notes-medical"></i> Diagnostic :</strong>
+                    <p class="mt-2 border p-3 bg-light rounded">{{ consultation.diagnostic }}</p>
+                </div>
+                {% endif %}
+
+                {% if consultation.notesConsultation %}
+                <div class="mb-3">
+                    <strong><i class="fas fa-sticky-note"></i> Notes :</strong>
+                    <p class="mt-2">{{ consultation.notesConsultation }}</p>
+                </div>
+                {% endif %}
+
+                {% if consultation.montant %}
+                <div class="mb-3">
+                    <strong><i class="fas fa-money-bill-wave"></i> Montant :</strong>
+                    <span class="fs-4 text-success">{{ consultation.montant }} TND</span>
+                    {% if consultation.payee %}
+                        <span class="badge bg-success ms-2">Payée</span>
+                    {% else %}
+                        <span class="badge bg-warning ms-2">Non payée</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ORDONNANCE ASSOCIÉE #}
+        {% if consultation.ordonnance %}
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-prescription"></i> Ordonnance
+                </h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Numéro :</strong> {{ consultation.ordonnance.numeroOrdonnance }}</p>
+                <p><strong>Date d'émission :</strong> {{ consultation.ordonnance.dateEmission|date('d/m/Y') }}</p>
+                <p><strong>Validité :</strong> {{ consultation.ordonnance.dateValidite|date('d/m/Y') }}</p>
+                
+                <a href="{{ path('app_ordonnance_show', {id: consultation.ordonnance.id}) }}" 
+                   class="btn btn-success">
+                    <i class="fas fa-eye"></i> Voir l'ordonnance
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ACTIONS SIDEBAR #}
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cogs"></i> Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="{{ path('app_consultation_edit', {id: consultation.id}) }}" 
+                   class="btn btn-warning w-100 mb-2">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+
+                {% if consultation.statut == 'PLANIFIEE' %}
+                <form method="post" action="{{ path('app_consultation_demarrer', {id: consultation.id}) }}" 
+                      class="d-inline w-100">
+                    <input type="hidden" name="_token" value="{{ csrf_token('demarrer' ~ consultation.id) }}">
+                    <button class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-play"></i> Démarrer
+                    </button>
+                </form>
+                {% endif %}
+
+                {% if consultation.statut == 'EN_COURS' %}
+                <form method="post" action="{{ path('app_consultation_terminer', {id: consultation.id}) }}" 
+                      class="d-inline w-100">
+                    <input type="hidden" name="_token" value="{{ csrf_token('terminer' ~ consultation.id) }}">
+                    <button class="btn btn-success w-100 mb-2">
+                        <i class="fas fa-check"></i> Terminer
+                    </button>
+                </form>
+                {% endif %}
+
+                {% if not consultation.ordonnance and consultation.statut == 'TERMINEE' %}
+                <a href="{{ path('app_ordonnance_new') }}" class="btn btn-info w-100 mb-2">
+                    <i class="fas fa-prescription"></i> Créer Ordonnance
+                </a>
+                {% endif %}
+
+                <form method="post" action="{{ path('app_consultation_delete', {id: consultation.id}) }}" 
+                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette consultation ?');" 
+                      class="w-100">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ consultation.id) }}">
+                    <button class="btn btn-danger w-100">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                </form>
+
+                <hr>
+
+                <a href="{{ path('app_consultation_index') }}" class="btn btn-secondary w-100">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
